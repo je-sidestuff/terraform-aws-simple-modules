@@ -104,7 +104,7 @@ module "alb" {
 
 # Use the fargate-task module
 module "minimal_fargate_task" {
-  source = "../../../modules/ecs/fargate-task"
+  source = "../../..//modules/ecs/fargate-task"
 
   cluster_name           = "${local.name_prefix}-cluster"
   container_name         = "nginx"
