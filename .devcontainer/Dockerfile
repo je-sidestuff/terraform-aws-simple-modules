@@ -4,10 +4,11 @@ ARG GO_VERSION=1.25
 
 FROM alpine/terragrunt:${TERRAGRUNT_VERSION} AS terragrunt
 
-FROM mcr.microsoft.com/devcontainers/go:1.25
+FROM mcr.microsoft.com/devcontainers/go:${GO_VERSION}
 
 COPY --from=terragrunt /bin/terraform /usr/local/bin/terragrunt /usr/local/bin/
 
-# Install node and claude code
-RUN sudo apt update && sudo apt install -y nodejs npm
-RUN npm install -g @anthropic-ai/claude-code
+COPY install_devcontainer_utilities.sh /tmp/install_devcontainer_utilities.sh
+
+# Install additional utilities in the devcontainer directly.
+RUN bash /tmp/install_devcontainer_utilities.sh

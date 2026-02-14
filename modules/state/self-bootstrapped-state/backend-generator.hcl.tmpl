@@ -1,0 +1,15 @@
+generate "backend" {
+  path      = "backend.tf"
+  if_exists = "overwrite_terragrunt"
+  contents = <<EOF
+terraform {
+  backend "s3" {
+    bucket         = "${bucket}"
+    key            = "${key_string}"
+    region         = "${region}"
+    dynamodb_table = "${dynamodb_table}"
+    encrypt        = true
+  }
+}
+EOF
+}
