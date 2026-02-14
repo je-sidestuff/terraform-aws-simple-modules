@@ -14,7 +14,7 @@ module "example_helpers" {
 }
 
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
+  source = "../../..//modules/network/vpc"
 
   name = "${local.name_prefix}-vpc"
   cidr = local.vpc_cidr

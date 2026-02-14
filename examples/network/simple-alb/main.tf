@@ -5,7 +5,12 @@
 
 locals {
   name_prefix = lower("ex-${module.example_helpers.random_value}-alb")
+
+  vpc_cidr = "10.0.0.0/16"
+  azs      = slice(data.aws_availability_zones.available.names, 0, 2)
 }
+
+data "aws_availability_zones" "available" {}
 
 module "example_helpers" {
   source = "github.com/je-sidestuff/terraform-example-helpers.git?ref=v0.0.1"
@@ -14,18 +19,22 @@ module "example_helpers" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DATA SOURCES
-# Fetch VPC and subnet information.
+# VPC
+# Create a VPC with public subnets for the ALB.
 # ---------------------------------------------------------------------------------------------------------------------
 
-data "aws_vpc" "default" {
-  default = true
-}
+module "vpc" {
+  source = "../../..//modules/network/vpc"
 
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
+  name = "${local.name_prefix}-vpc"
+  cidr = local.vpc_cidr
+
+  azs            = local.azs
+  public_subnets = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k)]
+
+  tags = {
+    Terraform   = "true"
+    Environment = "example"
   }
 }
 
@@ -37,7 +46,7 @@ data "aws_subnets" "default" {
 resource "aws_security_group" "alb" {
   name        = "${local.name_prefix}-sg"
   description = "Security group for ALB"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = module.vpc.vpc_id
 
   ingress {
     from_port   = 80
@@ -70,8 +79,8 @@ module "alb" {
 
   name        = local.name_prefix
   environment = "example"
-  vpc_id      = data.aws_vpc.default.id
-  subnets     = data.aws_subnets.default.ids
+  vpc_id      = module.vpc.vpc_id
+  subnets     = module.vpc.public_subnets
 
   security_groups = [aws_security_group.alb.id]
 
