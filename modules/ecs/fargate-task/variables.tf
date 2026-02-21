@@ -47,7 +47,13 @@ variable "vpc_id" {
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "task_role_arn" {
+  type        = string
+  description = "ARN of the IAM role for the ECS task to assume. This role grants permissions to the container."
+  default     = null
+}
+
 variable "tags" {
-    type = map(string)
-    default = {}
+  type    = map(string)
+  default = {}
 }

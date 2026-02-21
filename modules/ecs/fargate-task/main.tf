@@ -47,9 +47,10 @@ resource "aws_ecs_task_definition" "service" {
   ])
 
   network_mode = "awsvpc"
+  task_role_arn = var.task_role_arn
 
   requires_compatibilities = ["FARGATE"]
-  cpu = 256
+  cpu    = 256
   memory = 512
   runtime_platform {
     operating_system_family = "LINUX"
