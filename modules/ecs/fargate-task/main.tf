@@ -72,7 +72,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ipv4" {
   security_group_id = aws_security_group.allow_traffic_to_container.id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = var.container_port
-  ip_protocol       = "-1"
+  ip_protocol       = var.container_protocol
   to_port           = var.container_port
 }
 
@@ -80,7 +80,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ipv6" {
   security_group_id = aws_security_group.allow_traffic_to_container.id
   cidr_ipv6         = "::/0"
   from_port         = var.container_port
-  ip_protocol       = "-1"
+  ip_protocol       = var.container_protocol
   to_port           = var.container_port
 }
 

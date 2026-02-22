@@ -30,7 +30,18 @@ variable "container_name" {
 
 variable "container_port" {
     type = number
-    
+
+}
+
+variable "container_protocol" {
+    description = "The IP protocol for container traffic (tcp or udp). Required when specifying ports in security group rules."
+    type        = string
+    default     = "tcp"
+
+    validation {
+        condition     = contains(["tcp", "udp"], var.container_protocol)
+        error_message = "container_protocol must be 'tcp' or 'udp'."
+    }
 }
 
 variable "container_image" {

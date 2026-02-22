@@ -32,74 +32,45 @@ module "vpc" {
   }
 }
 
-module "alb" {
-  source = "terraform-aws-modules/alb/aws"
+resource "aws_security_group" "alb" {
+  name        = "${local.name_prefix}-alb-sg"
+  description = "Security group for ALB"
+  vpc_id      = module.vpc.vpc_id
 
-  name = "${local.name_prefix}-alb"
-
-  load_balancer_type = "application"
-
-  vpc_id  = module.vpc.vpc_id
-  subnets = module.vpc.public_subnets
-
-  # For example only
-  enable_deletion_protection = false
-
-  # Security Group
-  security_group_ingress_rules = {
-    all_http = {
-      from_port   = 80
-      to_port     = 80
-      ip_protocol = "tcp"
-      cidr_ipv4   = "0.0.0.0/0"
-    }
-  }
-  security_group_egress_rules = {
-    all = {
-      ip_protocol = "-1"
-      cidr_ipv4   = module.vpc.vpc_cidr_block
-    }
-  }
-  
-  listeners = {
-    ex_http = {
-      port            = 80
-      protocol        = "HTTP"
-
-      forward = {
-        target_group_key = "ex_ecs"
-      }
-    }
+  ingress {
+    description = "HTTP from anywhere"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  target_groups = {
-    ex_ecs = {
-      backend_protocol                  = "HTTP"
-      backend_port                      = 80
-      target_type                       = "ip"
-      deregistration_delay              = 5
-      load_balancing_cross_zone_enabled = true
-
-      health_check = {
-        enabled             = true
-        healthy_threshold   = 5
-        interval            = 30
-        matcher             = "200"
-        path                = "/"
-        port                = "traffic-port"
-        protocol            = "HTTP"
-        timeout             = 5
-        unhealthy_threshold = 2
-      }
-
-      # ECS will attach the IPs
-      create_attachment = false
-    }
+  egress {
+    description = "Allow all outbound to VPC"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [module.vpc.vpc_cidr_block]
   }
 
   tags = {
+    Name      = "${local.name_prefix}-alb-sg"
     Terraform = "true"
   }
+}
+
+module "alb" {
+  source = "../../..//modules/alb"
+
+  name        = local.name_prefix
+  environment = "dev"
+
+  vpc_id          = module.vpc.vpc_id
+  subnets         = module.vpc.public_subnets
+  security_groups = [aws_security_group.alb.id]
+
+  enable_http = true
+  target_type = "ip" # Required for ECS Fargate tasks
 }
 
 # Create an IAM role for the ECS task with read-only access
@@ -126,14 +97,15 @@ module "task_role" {
 module "minimal_fargate_task" {
   source = "../../..//modules/ecs/fargate-task"
 
-  cluster_name         = "${local.name_prefix}-cluster"
-  container_name       = "nginx"
-  container_image      = "nginx:latest"
-  container_port       = 80
-  vpc_id               = module.vpc.vpc_id
-  subnets              = module.vpc.private_subnets
-  assign_public_ip     = false
-  alb_target_group_arn = module.alb.target_groups["ex_ecs"].arn
+  cluster_name       = "${local.name_prefix}-cluster"
+  container_name     = "nginx"
+  container_image    = "nginx:latest"
+  container_port     = 80
+  container_protocol = "tcp"
+  vpc_id             = module.vpc.vpc_id
+  subnets            = module.vpc.private_subnets
+  assign_public_ip   = false
+  alb_target_group_arn = module.alb.target_group_arn
   task_role_arn        = module.task_role.role_arn
 
   tags = {

@@ -52,6 +52,17 @@ variable "health_check_path" {
   default     = "/"
 }
 
+variable "target_type" {
+  description = "The type of target for the target group. Valid values: 'instance', 'ip', or 'lambda'. Use 'ip' for ECS Fargate tasks."
+  type        = string
+  default     = "instance"
+
+  validation {
+    condition     = contains(["instance", "ip", "lambda"], var.target_type)
+    error_message = "target_type must be 'instance', 'ip', or 'lambda'."
+  }
+}
+
 variable "default_action_type" {
   description = "The type of default action for the listener. Valid values: 'forward' or 'fixed-response'."
   type        = string

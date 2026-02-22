@@ -23,10 +23,11 @@ resource "aws_lb" "this" {
 resource "aws_lb_target_group" "this" {
   count = var.default_action_type == "forward" ? 1 : 0
 
-  name     = "${var.name}-tg"
-  port     = var.target_port
-  protocol = "HTTP"
-  vpc_id   = var.vpc_id
+  name        = "${var.name}-tg"
+  port        = var.target_port
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = var.target_type
 
   health_check {
     healthy_threshold   = "5"
