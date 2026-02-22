@@ -1,4 +1,35 @@
 # ---------------------------------------------------------------------------------------------------------------------
+# SECURITY GROUP
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_security_group" "this" {
+  name        = "${var.name}-alb-sg"
+  description = "Security group for ALB"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description = "HTTP from anywhere"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "${var.name}-alb-sg"
+    Environment = var.environment
+  }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
 # APPLICATION LOAD BALANCER
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -6,7 +37,7 @@ resource "aws_lb" "this" {
   name               = "${var.name}-alb"
   internal           = var.internal
   load_balancer_type = "application"
-  security_groups    = var.security_groups
+  security_groups    = concat([aws_security_group.this.id], var.security_groups)
   subnets            = var.subnets
 
   tags = {

@@ -3,6 +3,11 @@ output "arn" {
   description = "The ARN of the load balancer."
 }
 
+output "security_group_id" {
+  value       = aws_security_group.this.id
+  description = "The ID of the ALB security group."
+}
+
 output "dns_name" {
   value       = aws_lb.this.dns_name
   description = "The DNS name of the load balancer."

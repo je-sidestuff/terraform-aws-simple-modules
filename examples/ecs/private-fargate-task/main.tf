@@ -32,33 +32,6 @@ module "vpc" {
   }
 }
 
-resource "aws_security_group" "alb" {
-  name        = "${local.name_prefix}-alb-sg"
-  description = "Security group for ALB"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress {
-    description = "HTTP from anywhere"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "Allow all outbound to VPC"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = [module.vpc.vpc_cidr_block]
-  }
-
-  tags = {
-    Name      = "${local.name_prefix}-alb-sg"
-    Terraform = "true"
-  }
-}
-
 module "alb" {
   source = "../../..//modules/alb"
 
@@ -67,7 +40,6 @@ module "alb" {
 
   vpc_id          = module.vpc.vpc_id
   subnets         = module.vpc.public_subnets
-  security_groups = [aws_security_group.alb.id]
 
   enable_http = true
   target_type = "ip" # Required for ECS Fargate tasks
