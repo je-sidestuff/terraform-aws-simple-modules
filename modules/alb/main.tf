@@ -37,10 +37,10 @@ resource "aws_security_group" "this" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name        = "${var.name}-alb-sg"
-    Environment = var.environment
-  }
+  tags = merge(
+    { "Name" = "${var.name}-alb-sg" },
+    var.tags
+  )
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -54,10 +54,10 @@ resource "aws_lb" "this" {
   security_groups    = concat([aws_security_group.this.id], var.security_groups)
   subnets            = var.subnets
 
-  tags = {
-    Name        = "${var.name}-alb"
-    Environment = var.environment
-  }
+  tags = merge(
+    { "Name" = "${var.name}-alb" },
+    var.tags
+  )
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -85,10 +85,10 @@ resource "aws_lb_target_group" "this" {
     timeout             = "5"
   }
 
-  tags = {
-    Name        = "${var.name}-tg"
-    Environment = var.environment
-  }
+  tags = merge(
+    { "Name" = "${var.name}-tg" },
+    var.tags
+  )
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

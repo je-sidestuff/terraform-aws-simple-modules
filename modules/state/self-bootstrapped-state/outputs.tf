@@ -32,3 +32,8 @@ output "terragrunt_backend_generator" {
     key_string     = "$${path_relative_to_include()}/terraform.tfstate"
   })
 }
+
+output "scoping_tags" {
+  description = "Tags to apply to resources within this state's scope. Includes user-provided tags plus optional random seed and creation timestamp."
+  value       = local.scoping_tags
+}

@@ -1,4 +1,34 @@
 # ---------------------------------------------------------------------------------------------------------------------
+# SCOPING TAGS
+# These tags can be used by other modules to scope resources to this state
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "random_string" "scope_seed" {
+  count   = var.scoping_tags_include_random ? 1 : 0
+  length  = 4
+  special = false
+  upper   = false
+}
+
+resource "time_static" "scope_creation" {
+  count = var.scoping_tags_include_creation_timestamp ? 1 : 0
+}
+
+locals {
+  scoping_tags = merge(
+    var.scoping_tags,
+    var.scoping_tags_include_random ? {
+      "state-seed" = "${var.bucket_name}-${random_string.scope_seed[0].result}"
+    } : {},
+    var.scoping_tags_include_creation_timestamp ? {
+      "state-created" = time_static.scope_creation[0].rfc3339
+    } : {}
+  )
+
+  all_tags = merge(local.scoping_tags, var.tags)
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
 # S3 BUCKET FOR TERRAFORM STATE
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -7,7 +37,7 @@ resource "aws_s3_bucket" "terraform_state" {
 
   force_destroy = !var.enable_remote
 
-  tags = var.tags
+  tags = local.all_tags
 }
 
 resource "aws_s3_bucket_versioning" "terraform_state" {
@@ -49,7 +79,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
     type = "S"
   }
 
-  tags = var.tags
+  tags = local.all_tags
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

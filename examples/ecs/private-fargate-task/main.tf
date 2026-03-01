@@ -35,14 +35,18 @@ module "vpc" {
 module "alb" {
   source = "../../..//modules/alb"
 
-  name        = local.name_prefix
-  environment = "dev"
+  name = local.name_prefix
 
-  vpc_id          = module.vpc.vpc_id
-  subnets         = module.vpc.public_subnets
+  vpc_id  = module.vpc.vpc_id
+  subnets = module.vpc.public_subnets
 
   enable_http = true
   target_type = "ip" # Required for ECS Fargate tasks
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
 }
 
 # Create an IAM role for the ECS task with read-only access

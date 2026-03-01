@@ -8,11 +8,6 @@ variable "name" {
   type        = string
 }
 
-variable "environment" {
-  description = "The environment the load balancer will be run in."
-  type        = string
-}
-
 variable "subnets" {
   description = "The IDs of the subnets this LB belongs to."
   type        = list(string)
@@ -148,4 +143,10 @@ variable "domain" {
   description = "The domain name to alias to the load balancer. Required when create_dns_record is true."
   type        = string
   default     = null
+}
+
+variable "tags" {
+  description = "A map of tags to add to all resources."
+  type        = map(string)
+  default     = {}
 }

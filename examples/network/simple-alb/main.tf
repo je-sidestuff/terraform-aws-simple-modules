@@ -77,10 +77,9 @@ resource "aws_security_group" "alb" {
 module "alb" {
   source = "../../..//modules/alb"
 
-  name        = local.name_prefix
-  environment = "example"
-  vpc_id      = module.vpc.vpc_id
-  subnets     = module.vpc.public_subnets
+  name    = local.name_prefix
+  vpc_id  = module.vpc.vpc_id
+  subnets = module.vpc.public_subnets
 
   security_groups = [aws_security_group.alb.id]
 
@@ -90,4 +89,9 @@ module "alb" {
   fixed_response_content_type = "text/plain"
   fixed_response_message_body = "You have reached example ${local.name_prefix}."
   fixed_response_status_code  = "200"
+
+  tags = {
+    Terraform   = "true"
+    Environment = "example"
+  }
 }
