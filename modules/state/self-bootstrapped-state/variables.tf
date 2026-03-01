@@ -53,9 +53,15 @@ variable "scoping_tags" {
 }
 
 variable "scoping_tags_include_random" {
-  description = "Add a tag based on this bucket name and a random 4-character alphanumeric seed."
+  description = "Add a 'state-seed' tag based on the bucket name and a random 4-character alphanumeric seed. Uses the same seed as append_random_seed_to_bucket_name when both are enabled."
   type        = bool
   default     = true
+}
+
+variable "append_random_seed_to_bucket_name" {
+  description = "Append a random 4-character alphanumeric seed to the bucket name. Uses the same seed as scoping tags when both are enabled."
+  type        = bool
+  default     = false
 }
 
 variable "scoping_tags_include_creation_timestamp" {

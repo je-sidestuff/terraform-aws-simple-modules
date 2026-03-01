@@ -4,7 +4,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "random_string" "scope_seed" {
-  count   = var.scoping_tags_include_random ? 1 : 0
+  count   = (var.scoping_tags_include_random || var.append_random_seed_to_bucket_name) ? 1 : 0
   length  = 4
   special = false
   upper   = false
@@ -15,6 +15,8 @@ resource "time_static" "scope_creation" {
 }
 
 locals {
+  bucket_name = var.append_random_seed_to_bucket_name ? "${var.bucket_name}-${random_string.scope_seed[0].result}" : var.bucket_name
+
   scoping_tags = merge(
     var.scoping_tags,
     var.scoping_tags_include_random ? {
@@ -33,7 +35,7 @@ locals {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = var.bucket_name
+  bucket = local.bucket_name
 
   force_destroy = !var.enable_remote
 
